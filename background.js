@@ -7,7 +7,8 @@ chrome.browserAction.onClicked.addListener(() => {
     const kommanderUrl = chrome.runtime.getURL('kommander.html');
     const tabList = tabs
       .filter(tab => tab.url !== kommanderUrl)
-      .map(tab => `<li>${tab.title}: ${tab.url}</li>`)
+      .filter(nonInternalTabs)
+      .map(tab => `<li>${tab.title}: ${parseUrl(tab.url)}</li>`)
       .join('\n');
 
     const urls = tabs.map(tab => tab.url);
@@ -36,3 +37,14 @@ chrome.browserAction.onClicked.addListener(() => {
     }
   })
 });
+
+const nonInternalTabs = tab => tab.url.startsWith('chrome://') === false;
+
+const greatSuspenderRegex = /^chrome-extension:\/\/\w+\/suspended.html/;
+const parseUrl = url => {
+  if (url.match(greatSuspenderRegex)) {
+    return Qs.parse(url).uri;
+  }
+
+  return url;
+}

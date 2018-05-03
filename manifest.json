@@ -4,7 +4,7 @@
   "description": "Helping Nilson get a grip...",
   "background": {
     "persistent": false,
-    "scripts": ["background.js"]
+    "scripts": ["background.js", "libs/qs.js"]
   },
   "browser_action": {
     "default_icon": "camera.png",
