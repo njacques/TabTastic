@@ -2,17 +2,21 @@
   "name": "TabKommander",
   "version": "0.1",
   "description": "Helping Nilson get a grip...",
+  "options_page": "options.html",
   "background": {
     "persistent": false,
-    "scripts": ["background.js", "libs/qs.js"]
+    "scripts": ["background.bundle.js"]
   },
   "browser_action": {
-    "default_icon": "camera.png",
+    "default_icon": "icon-34.png",
     "default_title": "List those tabs"
+  },
+  "icons": {
+    "128": "icon-128.png"
   },
   "permissions": [
     "tabs", "activeTab"
   ],
-  "manifest_version": 2
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
-
