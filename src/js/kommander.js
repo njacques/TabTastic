@@ -1,8 +1,8 @@
 /* global document window */
+
 import { parseUrl } from './helpers/helpers';
 
 chrome.storage.local.get(['tabs'], ({ tabs }) => {
-  console.log(tabs);
   const tabHTML = tabs
     .map(tab => `<li><a href="${parseUrl(tab.url)}" target="blank">${tab.title}</a></li>`)
     .join('\n');
