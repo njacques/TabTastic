@@ -13,9 +13,10 @@ chrome.browserAction.onClicked.addListener(() => {
     const kommanderUrl = chrome.runtime.getURL('kommander.html');
     const tabList = tabs
       .filter(tab => tab.url !== kommanderUrl)
-      .filter(nonInternalTabs)
-      .map(tab => `<li>${tab.title}: ${parseUrl(tab.url)}</li>`)
-      .join('\n');
+      .filter(nonInternalTabs);
+
+
+
 
     const urls = tabs.map(tab => tab.url);
     const komanderIsOpen = urls.includes(kommanderUrl);
@@ -25,24 +26,14 @@ chrome.browserAction.onClicked.addListener(() => {
       kommanderID = kommanderTab.id;
     }
 
-    let targetId;
-    chrome.tabs.onUpdated.addListener(function listener(tabId, changedProps) {
-      if (tabId !== targetId || changedProps.status !== 'complete') return;
-
-      chrome.tabs.onUpdated.removeListener(listener);
-
-      chrome.extension
-        .getViews()
-        .find(view => view.location.href === kommanderUrl)
-        .setTabs(tabList);
+    chrome.storage.local.set({ tabs: tabList }, () => {
+      if (komanderIsOpen) {
+        chrome.tabs
+          .update(kommanderID, { active: true, url: kommanderUrl }, (tab) => { targetId = tab.id; });
+      } else {
+        chrome.tabs
+          .create({ url: kommanderUrl }, (tab) => { targetId = tab.id; });
+      }
     });
-
-    if (komanderIsOpen) {
-      chrome.tabs
-        .update(kommanderID, { active: true, url: kommanderUrl }, (tab) => { targetId = tab.id; });
-    } else {
-      chrome.tabs
-        .create({ url: kommanderUrl }, (tab) => { targetId = tab.id; });
-    }
   });
 });

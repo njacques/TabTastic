@@ -1,14 +1,12 @@
 /* global document window */
+import { parseUrl } from './helpers/helpers';
 
-function update() {
-  document.getElementById('target').innerHTML = window.tabs;
-}
+chrome.storage.local.get(['tabs'], ({ tabs }) => {
+  console.log(tabs);
+  const tabHTML = tabs
+    .map(tab => `<li><a href="${parseUrl(tab.url)}" target="blank">${tab.title}</a></li>`)
+    .join('\n');
 
-function setTabs(tabList) {
-  window.tabs = tabList;
-}
-
-window.tabs = 'pageload';
-window.setTabs = setTabs;
-
-setTimeout(() => { update(); }, 25);
+  document.getElementById('tab-count').innerHTML = tabs.length;
+  document.getElementById('target').innerHTML = tabHTML;
+});
