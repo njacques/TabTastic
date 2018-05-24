@@ -1,16 +1,10 @@
-/* global document window chrome */
-import parseDomain from "parse-domain";
+/* global document chrome */
 import Sortable from "sortablejs";
 import "../css/kommander.css";
-import { parseUrl } from "./helpers/helpers";
+import { getDomain } from "./helpers/helpers";
 
 const defaultFavicon =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
-
-const getDomain = url => {
-  const parts = parseDomain(url);
-  return parts ? `${parts.domain}.${parts.tld}` : "unknown";
-};
 
 const moveTab = (id, from, to) => {
   chrome.storage.local.get([from, to], data => {
@@ -49,12 +43,6 @@ const renderTab = tab => `
 
 chrome.storage.local.get(["inbox"], ({ inbox: tabs = [] }) => {
   const inbox = tabs
-    .map(({ id, favIconUrl, title, url }) => ({
-      id,
-      favIconUrl,
-      title,
-      url: parseUrl(url)
-    }))
     .map(renderTab)
     .join("\n");
 
