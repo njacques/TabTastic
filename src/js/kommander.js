@@ -1,5 +1,6 @@
 /* global document window chrome */
 import parseDomain from "parse-domain";
+import Sortable from "sortablejs";
 import "../css/kommander.css";
 import { parseUrl } from "./helpers/helpers";
 
@@ -13,8 +14,29 @@ const getDomain = url => {
   return parts ? `${parts.domain}.${parts.tld}` : "unknown";
 };
 
+const moveTab = (id, from, to) => {
+  chrome.storage.local.get([from, to], data => {
+    if (typeof data[from] === "undefined") return;
+    const source = data[from];
+
+    const destination = data[to] || [];
+
+    const selectedTab = source.find(tab => tab.id === id);
+
+    if (selectedTab) {
+      const idx = source.indexOf(selectedTab);
+      source.splice(idx, 1);
+      destination.push(selectedTab);
+
+      chrome.storage.local.set({ [from]: source, [to]: destination }, () =>
+        console.log(`tab moved from ${from} to ${to}`)
+      );
+    }
+  });
+};
+
 const renderTab = tab => `
-  <div class="card">
+  <div class="card" data-id="${tab.id}">
     <div class="card-content-modified">
       <div class="msg-subject ">
         <span class="msg-subject ">
@@ -27,7 +49,7 @@ const renderTab = tab => `
   </div>
 `;
 
-chrome.storage.local.get(["tabs"], ({ tabs }) => {
+chrome.storage.local.get(["inbox"], ({ inbox: tabs = [] }) => {
   const inbox = tabs
     .map(({ id, favIconUrl, title, url }) => ({
       id,
@@ -38,5 +60,19 @@ chrome.storage.local.get(["tabs"], ({ tabs }) => {
     .map(renderTab)
     .join("\n");
 
-  document.getElementById("inbox-messages").innerHTML = inbox;
+  const tabList = document.getElementById("inbox-messages");
+  tabList.innerHTML = inbox;
+
+  Sortable.create(tabList, {
+    group: "shared"
+  });
+});
+
+Sortable.create(document.getElementsByClassName("droppable")[0], {
+  group: "shared",
+  onAdd: evt => {
+    const el = evt.item;
+    el.parentNode.removeChild(el);
+    moveTab(Number(el.dataset.id), "inbox", "tutorials");
+  }
 });

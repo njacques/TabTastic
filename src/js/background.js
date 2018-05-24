@@ -17,7 +17,7 @@ chrome.browserAction.onClicked.addListener(() => {
     const urls = tabs.map(tab => tab.url);
     const komanderIsOpen = urls.includes(kommanderUrl);
 
-    chrome.storage.local.set({ tabs: tabList }, () => {
+    chrome.storage.local.set({ inbox: tabList }, () => {
       if (komanderIsOpen) {
         const kommanderTab = tabs.filter(tab => tab.url === kommanderUrl)[0];
         chrome.tabs.update(kommanderTab.id, {
