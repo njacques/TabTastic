@@ -7,8 +7,6 @@ import { parseUrl } from "./helpers/helpers";
 const defaultFavicon =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
 
-window.inbox = [];
-
 const getDomain = url => {
   const parts = parseDomain(url);
   return parts ? `${parts.domain}.${parts.tld}` : "unknown";
