@@ -10,7 +10,7 @@ const kommanderUrl = chrome.runtime.getURL("kommander.html");
 
 chrome.browserAction.onClicked.addListener(() => {
   chrome.tabs.query({}, tabs => {
-    const tabList = tabs
+    const bookmarks = tabs
       .filter(tab => tab.url !== kommanderUrl)
       .filter(nonInternalTabs)
       .map(tabToBookmark);
@@ -18,7 +18,7 @@ chrome.browserAction.onClicked.addListener(() => {
     const urls = tabs.map(tab => tab.url);
     const komanderIsOpen = urls.includes(kommanderUrl);
 
-    chrome.storage.local.set({ inbox: tabList }, () => {
+    chrome.storage.local.set({ bookmarks }, () => {
       if (komanderIsOpen) {
         const kommanderTab = tabs.filter(tab => tab.url === kommanderUrl)[0];
         chrome.tabs.update(kommanderTab.id, {

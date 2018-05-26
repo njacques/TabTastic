@@ -6,59 +6,44 @@ import { getDomain } from "./helpers/helpers";
 const defaultFavicon =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
 
-const moveTab = (id, from, to) => {
-  chrome.storage.local.get([from, to], data => {
-    if (typeof data[from] === "undefined") return;
-    const source = data[from];
-
-    const destination = data[to] || [];
-
-    const selectedTab = source.find(tab => tab.id === id);
-
-    if (selectedTab) {
-      const idx = source.indexOf(selectedTab);
-      source.splice(idx, 1);
-      destination.push(selectedTab);
-
-      chrome.storage.local.set({ [from]: source, [to]: destination }, () =>
-        console.log(`tab moved from ${from} to ${to}`)
-      );
-    }
-  });
-};
-
-const renderTab = tab => `
-  <div class="card" data-id="${tab.id}">
+const renderBookmark = bookmark => `
+  <div class="card" data-id="${bookmark.id}">
     <div class="card-content-modified">
       <div class="msg-subject ">
         <span class="msg-subject ">
-          <img src="${tab.favIconUrl ||
+          <img src="${bookmark.favIconUrl ||
             defaultFavicon}" height="16" width="16" />
-          ${tab.title} (${getDomain(tab.url)})
+          ${bookmark.title} (${getDomain(bookmark.url)})
         </span>
       </div>
     </div>
   </div>
 `;
 
-chrome.storage.local.get(["inbox"], ({ inbox: tabs = [] }) => {
-  const inbox = tabs
-    .map(renderTab)
+chrome.storage.local.get(["bookmarks"], ({ bookmarks = [] }) => {
+  const inbox = bookmarks
+    .filter(bookmark => bookmark.folder === "inbox")
+    .map(renderBookmark)
     .join("\n");
 
-  const tabList = document.getElementById("inbox-messages");
-  tabList.innerHTML = inbox;
+  const inboxList = document.getElementById("inbox-messages");
+  inboxList.innerHTML = inbox;
 
-  Sortable.create(tabList, {
+  Sortable.create(inboxList, {
     group: "shared"
   });
-});
 
-Sortable.create(document.getElementsByClassName("droppable")[0], {
-  group: "shared",
-  onAdd: evt => {
-    const el = evt.item;
-    el.parentNode.removeChild(el);
-    moveTab(Number(el.dataset.id), "inbox", "tutorials");
-  }
+  Sortable.create(document.getElementsByClassName("droppable")[0], {
+    group: "shared",
+    onAdd: evt => {
+      const el = evt.item;
+      const bookmarkId = Number(el.dataset.id);
+
+      el.parentNode.removeChild(el);
+
+      const bookmark = bookmarks.find(bm => bm.id === bookmarkId);
+      bookmark.folder = "tutorials";
+      chrome.storage.local.set({ bookmarks });
+    }
+  });
 });
