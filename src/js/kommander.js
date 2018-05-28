@@ -21,7 +21,7 @@ const renderBookmark = bookmark => `
 `;
 
 chrome.storage.local.get(["bookmarks"], ({ bookmarks = [] }) => {
-  const inbox = bookmarks
+  const inbox = Object.values(bookmarks)
     .filter(bookmark => bookmark.folder === "inbox")
     .map(renderBookmark)
     .join("\n");
@@ -41,7 +41,9 @@ chrome.storage.local.get(["bookmarks"], ({ bookmarks = [] }) => {
 
       el.parentNode.removeChild(el);
 
-      const bookmark = bookmarks.find(bm => bm.id === bookmarkId);
+      const bookmark = Object.values(bookmarks).find(
+        bm => bm.id === bookmarkId
+      );
       bookmark.folder = "tutorials";
       chrome.storage.local.set({ bookmarks });
     }
