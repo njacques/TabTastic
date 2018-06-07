@@ -45,24 +45,27 @@
       <aside class="column is-2 aside hero is-fullheight">
         <div>
           <div class="main">
-            <a href="#" class="item" :class="{ active: isActive('inbox') }" @click="category = 'inbox'">
-              <span class="icon">
-                <i class="fa fa-inbox"></i>
-              </span>
-              <span class="name">Inbox</span>
-            </a>
-            <a href="#" class="item" :class="{ active: isActive('articles') }" @click="category = 'articles'">
-              <span class="icon">
-                <i class="fa fa-file"></i>
-              </span>
-              <span class=" name ">Articles</span>
-            </a>
-            <a href="# " class="item droppable" :class="{ active: isActive('tutorials') }" @click="category = 'tutorials'">
-              <span class="icon ">
-                <i class="fa fa-book "></i>
-              </span>
-              <span class="name ">Tutorials</span>
-            </a>
+            <draggable
+              v-for="(folder, idx) in folders"
+              v-model="tempArray"
+              class="dragArea"
+              :options="{group:'transfer'}"
+              @change="moveToFolder(folder.name, $event)"
+              :key="idx"
+            >
+              <a
+                href="#"
+                class="item"
+                :class="{ active: isActive(folder.name) }"
+                @click="changeFolder(folder.name)"
+                slot="footer"
+              >
+                <span class="icon ">
+                  <i :class="folder.icon"></i>
+                </span>
+                <span class="name">{{ folder.name }}</span>
+              </a>
+            </draggable>
           </div>
         </div>
       </aside>
@@ -98,55 +101,105 @@
         </div>
 
         <div class="inbox-messages" id="inbox-messages">
-          <div class="card" v-for="bookmark in filteredBookmarks">
-            <div class="card-content-modified">
-              <div class="msg-subject ">
-                <span class="msg-subject ">
-                  <img :src="bookmark.favIconUrl ||
-                    defaultFavicon" height="16" width="16" />
-                  {{bookmark.title}} ({{getDomain(bookmark.url)}})
-                </span>
+          <draggable v-model="filteredBookmarks" :options="{group:'transfer'}">
+            <div class="card" v-for="bookmark in filteredBookmarks">
+              <div class="card-content-modified">
+                <div class="msg-subject ">
+                  <span class="msg-subject ">
+                    <img :src="bookmark.favIconUrl ||
+                      defaultFavicon" height="16" width="16" />
+                    {{bookmark.title}} ({{getDomain(bookmark.url)}})
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          </draggable>
         </div>
+
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import draggable from 'vuedraggable'
 import { getDomain } from "../helpers/helpers";
+
+const defaultFavicon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
+
+const saveBookmarks = bookmarks => {
+  chrome.storage.local.set({ bookmarks });
+}
 
 export default {
   name: 'app',
+
+  components: { draggable },
+
   created() {
-    chrome.storage.local.get(["bookmarks"], ({ bookmarks = [] }) => {
-      this.bookmarks = Object.values(bookmarks);
+    chrome.storage.local.get(["bookmarks"], ({ bookmarks = {} }) => {
+      this.bookmarks = bookmarks;
     });
   },
 
   computed: {
-    filteredBookmarks() {
-      return this.bookmarks.filter(bookmark => bookmark.folder === this.category);
-    }
+    filteredBookmarks: {
+      get() {
+        return Object.values(this.bookmarks)
+          .filter(bookmark => bookmark.folder === this.activeFolder);
+      },
+      set(newValue) {} // exists to keep vuedraggable happy
+    },
   },
 
   data () {
     return {
-      bookmarks: [],
-      category: 'inbox',
-      msg: 'Welcome to Your Vue.js App'
+      bookmarks: {},
+      activeFolder: 'inbox',
+      folders: [
+        { name: 'inbox', icon: 'fa fa-inbox' },
+        { name: 'articles', icon: 'fa fa-file' },
+        { name: 'tutorials', icon: 'fa fa-book' }
+      ],
+      defaultFavicon,
+      tempArray: [] // exists to keep vuedraggable happy
     }
   },
 
   methods: {
+    moveToFolder(targetFolder, { added }) {
+      added.element.folder = targetFolder;
+      // this.tempArray = [];
+      saveBookmarks(this.bookmarks);
+    },
+    changeFolder(folderName) {
+      this.activeFolder = folderName;
+    },
     getDomain(value) {
       return getDomain(value);
     },
-    isActive(category) {
-      return this.category === category;
+    isActive(folder) {
+      return this.activeFolder === folder;
     }
   }
 }
 </script>
+
+<style>
+  .card-content-modified {
+    padding: 2px 15px;
+  }
+  .msg-subject img {
+    vertical-align: middle;
+    margin-right: 2px;
+  }
+  .dragArea {
+    min-height: 10px;
+  }
+  .dragArea .card {
+    display: none;
+  }
+  .item .name {
+    text-transform: capitalize;
+  }
+</style>
