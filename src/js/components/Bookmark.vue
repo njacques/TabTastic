@@ -10,6 +10,7 @@
           </div>
         </div>
         <div class="column is-one-quarter has-text-right">
+          <a class="button" :href="url" target="_blank"><i class="fas fa-external-link-alt"></i></a>
           <a class="button"><i class="fas fa-edit"></i></a>
           <a class="button" @click="$emit('delete')"><i class="fas fa-trash"></i></a>
         </div>
