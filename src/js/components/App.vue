@@ -68,7 +68,8 @@
               :key="index"
               :title="bookmark.title" 
               :url="bookmark.url" 
-              :favicon="bookmark.favIconUrl" />
+              :favicon="bookmark.favIconUrl"
+              @delete="deleteBookmark(bookmark)" />
           </draggable>
 
         </div>
@@ -156,6 +157,10 @@ export default {
   },
 
   methods: {
+    deleteBookmark(bookmark) {
+      this.$delete(this.bookmarks, bookmark.url);
+      saveBookmarks(this.bookmarks);
+    },
     filterBookmarks(terms) {
       this.searchTerms = terms;
     },
