@@ -1,48 +1,6 @@
 <template>
   <div>
-    <navbar @search="filterBookmarks">
-      <nav class="navbar has-shadow">
-        <div class="container">
-          <div class="navbar-brand">
-            <a class="navbar-item" href="../">
-              TabKommander
-            </a>
-
-            <div class="navbar-burger burger" data-target="navMenu">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </div>
-
-          <div id="navMenu" class="navbar-menu">
-            <div class="navbar-end">
-              <div class="navbar-item has-dropdown ">
-                <a class="navbar-link">
-                  Account
-                </a>
-
-                <div class="navbar-dropdown">
-                  <a class="navbar-item">
-                    Dashboard
-                  </a>
-                  <a class="navbar-item">
-                    Profile
-                  </a>
-                  <a class="navbar-item">
-                    Settings
-                  </a>
-                  <hr class="navbar-divider">
-                  <div class="navbar-item">
-                    Logout
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </navbar>
+    <navbar @search="filterBookmarks"/>
     <div class="columns" id="mail-app">
       <aside class="column is-2 aside hero is-fullheight">
         <div>
@@ -105,19 +63,14 @@
         <div class="inbox-messages" id="inbox-messages">
 
           <draggable v-model="filteredBookmarks" :options="{group:'transfer'}">
-            <div class="card" v-for="(bookmark, index) in filteredBookmarks" :key="index">
-              <div class="card-content-modified">
-                <div class="msg-subject ">
-                  <span class="msg-subject ">
-                    <img :src="bookmark.favIconUrl ||
-                      defaultFavicon" height="16" width="16" />
-                    {{bookmark.title}} ({{getDomain(bookmark.url)}})
-                  </span>
-                </div>
-              </div>
-            </div>
+            <bookmark 
+              v-for="(bookmark, index) in filteredBookmarks"
+              :key="index"
+              :title="bookmark.title" 
+              :url="bookmark.url" 
+              :favicon="bookmark.favIconUrl" />
           </draggable>
-          
+
         </div>
 
       </div>
@@ -151,10 +104,7 @@
 <script>
 import draggable from "vuedraggable";
 import navbar from "./Navbar.vue";
-import { getDomain } from "../helpers/helpers";
-
-const defaultFavicon =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
+import bookmark from "./Bookmark.vue";
 
 const saveBookmarks = bookmarks => {
   chrome.storage.local.set({ bookmarks });
@@ -163,7 +113,7 @@ const saveBookmarks = bookmarks => {
 export default {
   name: "app",
 
-  components: { draggable, navbar },
+  components: { draggable, navbar, bookmark },
 
   created() {
     chrome.storage.local.get(["bookmarks"], ({ bookmarks = {} }) => {
@@ -199,7 +149,6 @@ export default {
         { name: "articles", icon: "fa fa-file" },
         { name: "tutorials", icon: "fa fa-book" }
       ],
-      defaultFavicon,
       searchTerms: "",
       showModal: false,
       tempArray: [] // exists to keep vuedraggable happy
@@ -218,9 +167,6 @@ export default {
     changeFolder(folderName) {
       this.activeFolder = folderName;
     },
-    getDomain(value) {
-      return getDomain(value);
-    },
     isActive(folder) {
       return this.activeFolder === folder;
     }
@@ -229,13 +175,6 @@ export default {
 </script>
 
 <style>
-.card-content-modified {
-  padding: 2px 15px;
-}
-.msg-subject img {
-  vertical-align: middle;
-  margin-right: 2px;
-}
 .dragArea {
   min-height: 10px;
 }
