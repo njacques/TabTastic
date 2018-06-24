@@ -1,46 +1,48 @@
 <template>
   <div>
-    <nav class="navbar has-shadow">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="../">
-            TabKommander
-          </a>
+    <navbar @search="filterBookmarks">
+      <nav class="navbar has-shadow">
+        <div class="container">
+          <div class="navbar-brand">
+            <a class="navbar-item" href="../">
+              TabKommander
+            </a>
 
-          <div class="navbar-burger burger" data-target="navMenu">
-            <span></span>
-            <span></span>
-            <span></span>
+            <div class="navbar-burger burger" data-target="navMenu">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
           </div>
-        </div>
 
-        <div id="navMenu" class="navbar-menu">
-          <div class="navbar-end">
-            <div class="navbar-item has-dropdown ">
-              <a class="navbar-link">
-                Account
-              </a>
+          <div id="navMenu" class="navbar-menu">
+            <div class="navbar-end">
+              <div class="navbar-item has-dropdown ">
+                <a class="navbar-link">
+                  Account
+                </a>
 
-              <div class="navbar-dropdown">
-                <a class="navbar-item">
-                  Dashboard
-                </a>
-                <a class="navbar-item">
-                  Profile
-                </a>
-                <a class="navbar-item">
-                  Settings
-                </a>
-                <hr class="navbar-divider">
-                <div class="navbar-item">
-                  Logout
+                <div class="navbar-dropdown">
+                  <a class="navbar-item">
+                    Dashboard
+                  </a>
+                  <a class="navbar-item">
+                    Profile
+                  </a>
+                  <a class="navbar-item">
+                    Settings
+                  </a>
+                  <hr class="navbar-divider">
+                  <div class="navbar-item">
+                    Logout
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </navbar>
     <div class="columns" id="mail-app">
       <aside class="column is-2 aside hero is-fullheight">
         <div>
@@ -72,7 +74,7 @@
       <div class="column is-10 messages hero is-fullheight " id="message-feed ">
         <div class="action-buttons ">
           <div class="control is-grouped ">
-            <a class="button is-small ">
+            <a class="button is-small " @click="showModal = !showModal">
               <i class="fa fa-chevron-down "></i>
             </a>
             <a class="button is-small ">
@@ -101,8 +103,9 @@
         </div>
 
         <div class="inbox-messages" id="inbox-messages">
+
           <draggable v-model="filteredBookmarks" :options="{group:'transfer'}">
-            <div class="card" v-for="bookmark in filteredBookmarks">
+            <div class="card" v-for="(bookmark, index) in filteredBookmarks" :key="index">
               <div class="card-content-modified">
                 <div class="msg-subject ">
                   <span class="msg-subject ">
@@ -114,27 +117,53 @@
               </div>
             </div>
           </draggable>
+          
         </div>
 
+      </div>
+    </div>
+
+    <div class="modal" :class="{ 'is-active': showModal }">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Modal title</p>
+          <button class="delete" aria-label="close" @click="showModal = false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="field">
+            <label class="label">Name</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Text input">
+            </div>
+          </div>
+          
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success">Save changes</button>
+          <button class="button">Cancel</button>
+        </footer>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import draggable from 'vuedraggable'
+import draggable from "vuedraggable";
+import navbar from "./Navbar.vue";
 import { getDomain } from "../helpers/helpers";
 
-const defaultFavicon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
+const defaultFavicon =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZ0lEQVQ4T2NkoBAwIuuPiIhwwGHegxUrVjzAJodhwIoVKw6gG/r///8fjIyML7AZQpQBL168OCEuLm6AzRCiDAC5ysHBgQObIUQZgO53ZG8SNABdMyigRw0Y/mFATObEmQ6I0YyuBgB6/3gRnZbduwAAAABJRU5ErkJggg==";
 
 const saveBookmarks = bookmarks => {
   chrome.storage.local.set({ bookmarks });
-}
+};
 
 export default {
-  name: 'app',
+  name: "app",
 
-  components: { draggable },
+  components: { draggable, navbar },
 
   created() {
     chrome.storage.local.get(["bookmarks"], ({ bookmarks = {} }) => {
@@ -145,28 +174,42 @@ export default {
   computed: {
     filteredBookmarks: {
       get() {
-        return Object.values(this.bookmarks)
-          .filter(bookmark => bookmark.folder === this.activeFolder);
+        const bookmarksInFolder = Object.values(this.bookmarks).filter(
+          bookmark => bookmark.folder === this.activeFolder
+        );
+
+        if (this.searchTerms) {
+          return bookmarksInFolder.filter(bookmark =>
+            bookmark.title.toLowerCase().includes(this.searchTerms)
+          );
+        }
+
+        return bookmarksInFolder;
       },
       set(newValue) {} // exists to keep vuedraggable happy
-    },
-  },
-
-  data () {
-    return {
-      bookmarks: {},
-      activeFolder: 'inbox',
-      folders: [
-        { name: 'inbox', icon: 'fa fa-inbox' },
-        { name: 'articles', icon: 'fa fa-file' },
-        { name: 'tutorials', icon: 'fa fa-book' }
-      ],
-      defaultFavicon,
-      tempArray: [] // exists to keep vuedraggable happy
     }
   },
 
+  data() {
+    return {
+      bookmarks: {},
+      activeFolder: "inbox",
+      folders: [
+        { name: "inbox", icon: "fa fa-inbox" },
+        { name: "articles", icon: "fa fa-file" },
+        { name: "tutorials", icon: "fa fa-book" }
+      ],
+      defaultFavicon,
+      searchTerms: "",
+      showModal: false,
+      tempArray: [] // exists to keep vuedraggable happy
+    };
+  },
+
   methods: {
+    filterBookmarks(terms) {
+      this.searchTerms = terms;
+    },
     moveToFolder(targetFolder, { added }) {
       added.element.folder = targetFolder;
       // this.tempArray = [];
@@ -182,24 +225,24 @@ export default {
       return this.activeFolder === folder;
     }
   }
-}
+};
 </script>
 
 <style>
-  .card-content-modified {
-    padding: 2px 15px;
-  }
-  .msg-subject img {
-    vertical-align: middle;
-    margin-right: 2px;
-  }
-  .dragArea {
-    min-height: 10px;
-  }
-  .dragArea .card {
-    display: none;
-  }
-  .item .name {
-    text-transform: capitalize;
-  }
+.card-content-modified {
+  padding: 2px 15px;
+}
+.msg-subject img {
+  vertical-align: middle;
+  margin-right: 2px;
+}
+.dragArea {
+  min-height: 10px;
+}
+.dragArea .card {
+  display: none;
+}
+.item .name {
+  text-transform: capitalize;
+}
 </style>
