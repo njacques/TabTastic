@@ -101,7 +101,7 @@ export default {
 
         if (this.searchTerms) {
           return bookmarksInFolder.filter(bookmark =>
-            bookmark.title.toLowerCase().includes(this.searchTerms)
+            bookmark.title.toLowerCase().includes(this.searchTerms.toLowerCase())
           );
         }
 
