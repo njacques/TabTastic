@@ -1,9 +1,9 @@
 <template>
   <div>
-    <navbar @search="filterBookmarks"/>
+    <navbar class="is-fixed-top" @search="filterBookmarks"/>
     <div class="columns" id="mail-app">
       <aside class="column is-2 aside hero is-fullheight">
-        <div>
+        <div class="sticky">
           <div class="main">
             <draggable
               v-for="(folder, idx) in folders"
@@ -30,44 +30,14 @@
         </div>
       </aside>
       <div class="column is-10 messages hero is-fullheight " id="message-feed ">
-        <div class="action-buttons ">
-          <div class="control is-grouped ">
-            <a class="button is-small " @click="showModal = !showModal">
-              <i class="fa fa-chevron-down "></i>
-            </a>
-            <a class="button is-small ">
-              <i class="fa fa-refresh "></i>
-            </a>
-          </div>
-          <div class="control is-grouped ">
-            <a class="button is-small ">
-              <i class="fa fa-inbox "></i>
-            </a>
-            <a class="button is-small ">
-              <i class="fa fa-exclamation-circle "></i>
-            </a>
-            <a class="button is-small ">
-              <i class="fa fa-trash-o "></i>
-            </a>
-          </div>
-          <div class="control is-grouped ">
-            <a class="button is-small ">
-              <i class="fa fa-folder "></i>
-            </a>
-            <a class="button is-small ">
-              <i class="fa fa-tag "></i>
-            </a>
-          </div>
-        </div>
-
         <div class="inbox-messages" id="inbox-messages">
 
           <draggable v-model="filteredBookmarks" :options="{group:'transfer'}">
-            <bookmark 
+            <bookmark
               v-for="(bookmark, index) in filteredBookmarks"
               :key="index"
-              :title="bookmark.title" 
-              :url="bookmark.url" 
+              :title="bookmark.title"
+              :url="bookmark.url"
               :favicon="bookmark.favIconUrl"
               @delete="deleteBookmark(bookmark)" />
           </draggable>
@@ -91,7 +61,7 @@
               <input class="input" type="text" placeholder="Text input">
             </div>
           </div>
-          
+
         </section>
         <footer class="modal-card-foot">
           <button class="button is-success">Save changes</button>
@@ -131,7 +101,7 @@ export default {
 
         if (this.searchTerms) {
           return bookmarksInFolder.filter(bookmark =>
-            bookmark.title.toLowerCase().includes(this.searchTerms)
+            bookmark.title.toLowerCase().includes(this.searchTerms.toLowerCase())
           );
         }
 
@@ -188,5 +158,9 @@ export default {
 }
 .item .name {
   text-transform: capitalize;
+}
+.sticky {
+  position: sticky;
+  top: 50px;
 }
 </style>
