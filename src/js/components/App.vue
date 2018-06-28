@@ -1,9 +1,9 @@
 <template>
   <div>
-    <navbar @search="filterBookmarks"/>
+    <navbar class="is-fixed-top" @search="filterBookmarks"/>
     <div class="columns" id="mail-app">
       <aside class="column is-2 aside hero is-fullheight">
-        <div>
+        <div class="sticky">
           <div class="main">
             <draggable
               v-for="(folder, idx) in folders"
@@ -158,5 +158,9 @@ export default {
 }
 .item .name {
   text-transform: capitalize;
+}
+.sticky {
+  position: sticky;
+  top: 50px;
 }
 </style>
