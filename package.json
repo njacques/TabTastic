@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-vue": "^4.5.0",
     "parse-domain": "^2.0.0",
     "qs": "^6.5.2",
     "sortablejs": "^1.7.0",
