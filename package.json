@@ -34,6 +34,7 @@
     "sortablejs": "^1.7.0",
     "vue": "^2.5.16",
     "vue-loader": "^15.2.2",
+    "vue-multiselect": "^2.1.0",
     "vue-template-compiler": "^2.5.16",
     "vuedraggable": "^2.16.0"
   }

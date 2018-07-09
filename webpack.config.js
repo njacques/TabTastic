@@ -45,12 +45,12 @@ const options = {
     rules: [
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
+        loader: "vue-loader"
       },
       {
         test: /\.css$/,
-        loader: "style-loader!css-loader",
-        exclude: /node_modules/
+        loader: "style-loader!css-loader"
+        // exclude: /node_modules/
       },
       {
         test: new RegExp(".(" + fileExtensions.join("|") + ")$"),

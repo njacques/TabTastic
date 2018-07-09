@@ -39,6 +39,7 @@
               :title="bookmark.title"
               :url="bookmark.url"
               :favicon="bookmark.favIconUrl"
+              @edit="editBookmark(bookmark)"
               @delete="deleteBookmark(bookmark)" />
           </draggable>
 
@@ -51,21 +52,34 @@
       <div class="modal-background"></div>
       <div class="modal-card">
         <header class="modal-card-head">
-          <p class="modal-card-title">Modal title</p>
-          <button class="delete" aria-label="close" @click="showModal = false"></button>
+          <p class="modal-card-title">Edit bookmark</p>
+          <button class="delete" aria-label="close" @click="closeModal"></button>
         </header>
         <section class="modal-card-body">
           <div class="field">
-            <label class="label">Name</label>
+            <label class="label">Title</label>
             <div class="control">
-              <input class="input" type="text" placeholder="Text input">
+              <input class="input" type="text" v-model="selectedBookmark.title">
             </div>
           </div>
-
+          <div class="field">
+            <label class="label">Tags</label>
+            <div class="control">
+              <multiselect
+                v-model="selectedBookmark.tags"
+                tag-placeholder="Add this as new tag"
+                placeholder="Search or add a tag"
+                :options="tagOptions"
+                :multiple="true"
+                :taggable="true"
+                @tag="addTag">
+              </multiselect>
+            </div>
+          </div>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-success">Save changes</button>
-          <button class="button">Cancel</button>
+          <button class="button is-success" @click="onModalSave">Save changes</button>
+          <button class="button" @click="closeModal">Cancel</button>
         </footer>
       </div>
     </div>
@@ -73,9 +87,11 @@
 </template>
 
 <script>
-import draggable from "vuedraggable";
-import navbar from "./Navbar.vue";
-import bookmark from "./Bookmark.vue";
+import "vue-multiselect/dist/vue-multiselect.min.css";
+import Multiselect from "vue-multiselect";
+import Draggable from "vuedraggable";
+import Navbar from "./Navbar.vue";
+import Bookmark from "./Bookmark.vue";
 
 const saveBookmarks = bookmarks => {
   chrome.storage.local.set({ bookmarks });
@@ -84,7 +100,7 @@ const saveBookmarks = bookmarks => {
 export default {
   name: "app",
 
-  components: { draggable, navbar, bookmark },
+  components: { Draggable, Navbar, Bookmark, Multiselect },
 
   created() {
     chrome.storage.local.get(["bookmarks"], ({ bookmarks = {} }) => {
@@ -101,7 +117,9 @@ export default {
 
         if (this.searchTerms) {
           return bookmarksInFolder.filter(bookmark =>
-            bookmark.title.toLowerCase().includes(this.searchTerms.toLowerCase())
+            bookmark.title
+              .toLowerCase()
+              .includes(this.searchTerms.toLowerCase())
           );
         }
 
@@ -121,15 +139,27 @@ export default {
         { name: "tutorials", icon: "fa fa-book" }
       ],
       searchTerms: "",
+      selectedBookmark: {},
       showModal: false,
-      tempArray: [] // exists to keep vuedraggable happy
+      tempArray: [], // exists to keep vuedraggable happy
+      tagValue: [],
+      tagOptions: ["Node.js", "React", "Angular"]
     };
   },
 
   methods: {
+    addTag(newTag) {
+      this.tagOptions.push(newTag);
+      this.tagValue.push(newTag);
+    },
     deleteBookmark(bookmark) {
       this.$delete(this.bookmarks, bookmark.url);
       saveBookmarks(this.bookmarks);
+    },
+    editBookmark(bookmark) {
+      console.log(this.selectedBookmark, bookmark);
+      Object.assign(this.selectedBookmark, bookmark);
+      this.showModal = true;
     },
     filterBookmarks(terms) {
       this.searchTerms = terms;
@@ -144,6 +174,22 @@ export default {
     },
     isActive(folder) {
       return this.activeFolder === folder;
+    },
+    closeModal() {
+      this.selectedBookmark = {};
+      this.tagValue = [];
+
+      this.showModal = false;
+    },
+    onModalSave() {
+      const bookmark = this.bookmarks[this.selectedBookmark.url];
+      Object.assign(bookmark, {
+        title: this.selectedBookmark.title,
+        tags: this.tagValue
+      });
+      saveBookmarks(this.bookmarks);
+
+      this.closeModal();
     }
   }
 };
