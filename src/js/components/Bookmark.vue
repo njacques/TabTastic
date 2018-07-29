@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card bookmark">
     <div class="card-content-modified">
       <div class="columns">
         <div class="column">
@@ -10,9 +10,15 @@
           </div>
         </div>
         <div class="column is-one-quarter has-text-right">
-          <a class="button" :href="url" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-          <a class="button"><i class="fas fa-edit"></i></a>
-          <a class="button" @click="$emit('delete')"><i class="fas fa-trash"></i></a>
+          <a class="button" :href="url" target="_blank">
+            <span class="icon has-text-grey-light"><i class="fas fa-external-link-alt"></i></span>
+          </a>
+          <a class="button">
+            <span class="icon has-text-grey-light"><i class="fas fa-edit"></i></span>
+          </a>
+          <a class="button" @click="$emit('delete')">
+            <span class="icon has-text-grey-light"><i class="fas fa-trash"></i></span>
+          </a>
         </div>
       </div>
     </div>
@@ -43,6 +49,9 @@ export default {
 </script>
 
 <style>
+.bookmark:hover {
+  cursor: -webkit-grab;
+}
 .card-content-modified {
   padding: 10px 15px;
 }
